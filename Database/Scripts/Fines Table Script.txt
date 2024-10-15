@@ -1,0 +1,86 @@
+
+----> Function Calculate Cost:
+
+CREATE FUNCTION FN_CalculateFine(@NumberOfBorrowingDays INT , @NumberOfLateDats INT)
+RETURNS FLOAT 
+AS
+BEGIN
+	
+	DECLARE @Cost FLOAT;
+
+	SET @Cost = 0.5 * @NumberOfBorrowingDays + (1 * @NumberOfLateDats);
+
+	RETURN @Cost;
+
+END
+
+
+
+-----> CREATE Fines View:
+
+
+ALTER VIEW View_Fines 
+AS
+	SELECT Fines.FineID , dbo.GetFullNameByPersonID(People.PersonID) AS Fullname , Borrowings.StartDate , Borrowings.EndDate , Fines.NumberOfLateDays , Fines.TotalFines  , 
+		CASE 
+			WHEN Fines.IsPaid = 1 THEN 'Yes' 
+			ELSE 'No'
+		END AS IsPaid
+	FROM Fines INNER JOIN Borrowings ON Fines.BorrowingID = Borrowings.BorrowingID INNER JOIN Users ON Fines.UserID = Users.UserID INNER JOIN People ON Users.PersonID = People.PersonID;
+
+
+
+-----> SP Get All Fines:
+
+CREATE PROCEDURE SP_GetAllFines
+AS
+BEGIN
+
+	SELECT * 
+	FROM View_Fines;
+
+END 
+
+
+----> SP Mark Fines As Paid:
+
+
+CREATE PROCEDURE SP_MarkFineAsPaidByFineID
+	@FineID INT
+AS
+BEGIN
+
+	UPDATE Fines 
+	SET Fines.IsPaid = 1
+	WHERE Fines.FineID = @FineID;
+
+END
+
+
+-----> SP Add New Fine Record:
+
+ALTER PROCEDURE SP_AddFineRecord
+	@BorrID INT 
+AS
+BEGIN
+
+	DECLARE @UserID			  INT;
+	DECLARE @StartDate	      DATE;
+	DECLARE @EndDate		  DATE;
+	DECLARE @ActualReturnDate DATE;
+
+	SELECT @UserID = UserID , @StartDate = StartDate , @EndDate = EndDate , @ActualReturnDate = ActualReturnDare 
+	FROM Borrowings
+	WHERE Borrowings.BorrowingID = @BorrID;
+		
+	DECLARE @TotalFines		  FLOAT;
+	DECLARE @NumberOfLateDays FLOAT;
+
+	SET @NumberOfLateDays = DATEDIFF(day,@ActualReturnDate,@EndDate);
+	SET @TotalFines = dbo.FN_CalculateFine(DATEDIFF(day,@StartDate,@EndDate),@NumberOfLateDays);
+
+	INSERT INTO 
+	Fines(BorrowingID,UserID,TotalFines,NumberOfLateDays,IsPaid)
+	VALUES(@BorrID,@UserID,@TotalFines,@NumberOfLateDays,0);
+
+END 

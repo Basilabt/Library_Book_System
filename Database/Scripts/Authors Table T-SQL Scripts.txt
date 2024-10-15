@@ -1,0 +1,29 @@
+
+
+---> SP Find Author By ID:
+
+
+CREATE PROCEDURE SP_FindAuthorByID
+	@AuthorID INT
+AS
+BEGIN
+
+	SELECT *
+	FROM Authors 
+	WHERE Authors.AuthorID = @AuthorID;
+
+END
+
+
+
+---> SP Add New Author:
+
+CREATE PROCEDURE SP_AddNewAuthor
+	@PersonID INT
+AS
+BEGIN
+	
+	INSERT INTO Authors(PersonID)
+	VALUES(@PersonID);
+	SELECT SCOPE_IDENTITY();
+END 

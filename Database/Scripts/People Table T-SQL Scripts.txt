@@ -1,0 +1,91 @@
+
+
+---> Find Person By PersonID
+
+
+CREATE PROCEDURE SP_FindPersonByPersonID
+	
+	@PersonID INT 
+
+AS 
+BEGIN
+	
+	SELECT * 
+	FROM People 
+	WHERE People.PersonID = @PersonID;
+
+END 
+
+
+
+----> Built In Function to Find Person Fullname by PersonID
+
+CREATE FUNCTION dbo.GetFullNameByPersonID
+(
+    @PersonID INT
+)
+RETURNS NVARCHAR(400)
+AS
+BEGIN
+    DECLARE @FullName NVARCHAR(400);
+
+    SELECT @FullName = People.FirstName + ' ' + People.SecondName + ' ' + People.ThirdName + ' ' + People.LastName
+    FROM People 
+    WHERE People.PersonID = @PersonID;
+
+    RETURN @FullName;
+END;
+
+
+
+----> SP Update Person 
+
+CREATE PROCEDURE SP_UpdatePerson
+	
+	@PersonID    INT          , 
+	@FirstName   NVARCHAR(50) ,
+	@SecondName  NVARCHAR(50) , 
+	@ThirdName   NVARCHAR(50) , 
+	@LastName    NVARCHAR(50) , 
+	@Gender      BIT , 
+	@PhoneNumber NVARCHAR(50) , 
+	@Email		 NVARCHAR(50)
+
+AS
+BEGIN
+	
+	UPDATE People
+	SET People.FirstName   =  @FirstName  ,
+		People.SecondName  =  @SecondName , 
+		People.ThirdName   =  @ThirdName  , 
+		People.LastName    =  @LastName   ,
+		People.Gender      =  @Gender , 
+		People.PhoneNumber =  @PhoneNumber , 
+		People.Email       =  @Email
+
+	WHERE People.PersonID = @PersonID;
+		 
+END 
+
+
+
+-----> SP Add New Person 
+
+
+CREATE PROCEDURE SP_AddNewPerson
+	@FirstName    NVARCHAR(50) , 
+	@SecondName   NVARCHAR(50) ,
+	@ThirdName    NVARCHAR(50) , 
+	@LastName     NVARCHAR(50) , 
+	@Gender		  BIT          ,
+	@Email        NVARCHAR(50) , 
+	@PhoneNumber  NVARCHAR(50) 
+
+AS
+BEGIN 
+
+	INSERT INTO People(FirstName,SecondName,ThirdName,LastName,Gender,PhoneNumber,Email) 
+	VALUES(@FirstName,@SecondName,@ThirdName,@LastName,@Gender,@PhoneNumber,@Email);
+	SELECT SCOPE_IDENTITY();
+
+END 

@@ -1,0 +1,164 @@
+
+
+CREATE DATABASE DB_LibrarySystem
+USE DB_LibrarySystem;
+
+
+
+---------> People Table Creation
+
+CREATE TABLE People 
+(
+
+	PersonID INT PRIMARY KEY IDENTITY(1,1) , 
+	FirstName   NVARCHAR(50)  NOT NULL , 
+	SecondName  NVARCHAR(50)  NOT NULL , 
+	ThirdName   NVARCHAR(50)  NOT NULL  , 
+	LastName    NVARCHAR(50)  NOT NULL ,
+	Gender      BIT NOT NULL ,
+	PhoneNumber NVARCHAR(50) NOT NULL , 
+	Email		NVARCHAR(50) NOT NULL , 
+
+)
+
+
+
+
+---------> Library Managers Table Creation
+
+
+CREATE TABLE LibraryManagers 
+(
+	ManagerID INT PRIMARY KEY IDENTITY(1,1) , 
+	PersonID INT , 
+	Username NVARCHAR(50) NOT NULL , 
+	Password NVARCHAR(50) NOT NULL , 
+	IsActive BIT NOT NULL , 
+
+	CONSTRAINT FK_PersonID FOREIGN KEY (PersonID) REFERENCES People(PersonID) ON DELETE CASCADE
+
+)
+
+
+
+--------> Users Table creation 
+
+CREATE TABLE Users 
+(
+	UserID INT PRIMARY KEY IDENTITY(1,1) , 
+	PersonID INT , 
+
+	CONSTRAINT FK_Users FOREIGN KEY (PersonID) REFERENCES People(PersonID) ON DELETE CASCADE
+
+)
+
+
+
+-------> Cards Table Creation
+
+
+
+
+CREATE TABLE Cards
+(
+	CardID INT PRIMARY KEY IDENTITY(1,1) , 
+	UserID INT,
+	CardNumber NVARCHAR(100)
+	
+	CONSTRAINT FK_UserID FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+
+)
+
+
+------> Authors Table Creation 
+
+CREATE TABLE Authors 
+(
+	AuthorID INT PRIMARY KEY IDENTITY(1,1) , 
+	PersonID INT , 
+
+	CONSTRAINT FK_Authors FOREIGN KEY (PersonID) REFERENCES People(PersonID) ON DELETE CASCADE
+
+)
+
+
+------> Books Table Creation
+
+CREATE TABLE Books 
+(
+
+	BookID			INT PRIMARY KEY IDENTITY(1,1) , 
+	AuthorID		INT , 
+	Title			NVARCHAR(50) NOT NULL ,
+	Genre			NVARCHAR(50) NOT NULL , 
+	ISBN			NVARCHAR(50) NOT NULL ,
+	PublishedDate	DATE NOT NULL , 
+	AdditionalNotes NVARCHAR(50) ,
+
+	CONSTRAINT FK_Books FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID)
+
+)
+
+-----> BooksCopies Table Creation 
+
+CREATE TABLE BooksCopies 
+(
+	BookCopyID INT PRIMARY KEY IDENTITY(1,1) , 
+	BookID INT ,
+	IsAvailable BIT ,
+
+	CONSTRAINT FK_BooksCopies FOREIGN KEY (BookID) REFERENCES Books(BookID)
+
+)
+
+
+-----> Reservations Table Creation
+
+
+CREATE TABLE Reservations 
+(
+
+	ReservationID INT PRIMARY KEY IDENTITY(1,1) , 
+	BookCopyID INT NOT NULL ,
+	UserID INT NOT NULL ,
+	ReservationDate DATE NOT NULL , 
+
+	CONSTRAINT FK1_Reservations FOREIGN KEY (BookCopyID) REFERENCES BooksCopies(BookCopyID) , 
+	CONSTRAINT FK2_Reservations FOREIGN KEY (UserID)	 REFERENCES Users(UserID)
+
+);
+
+
+-----> Borrowings Table Creation:
+
+CREATE TABLE Borrowings
+(
+	BorrowingID INT PRIMARY KEY IDENTITY(1,1) , 
+	BookCopyID  INT NOT NULL , 
+	UserID      INT NOT NULL , 
+	StartDate   DATE NOT NULL , 
+	EndDate     DATE NOT NULL , 
+	ActualReturnDare DATE NULL
+
+	CONSTRAINT BorrowingsFK_BookCopy FOREIGN KEY (BookCopyID) REFERENCES BooksCopies(BookCopyID) ,
+	CONSTRAINT BorrowingsFK_UserID   FOREIGN KEY (UserID)     REFERENCES Users(UserID)
+
+)
+
+
+------> Fines Table Creation:
+
+CREATE TABLE Fines 
+(
+	FineID      INT PRIMARY KEY IDENTITY(1,1) , 
+	BorrowingID INT NOT NULL ,
+	UserID      INT NOT NULL , 
+	TotalFines  FLOAT  ,
+	NumberOfLateDays INT ,
+	IsPaid BIT ,
+
+	CONSTRAINT FK1_Fines FOREIGN KEY (BorrowingID) REFERENCES Borrowings(BorrowingID) ,
+	CONSTRAINT FK2_Fines FOREIGN KEY (UserID)      REFERENCES Users(UserID)
+
+);
+

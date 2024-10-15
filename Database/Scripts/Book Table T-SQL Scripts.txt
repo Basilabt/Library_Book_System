@@ -1,0 +1,74 @@
+
+
+----> SP Find Book By Title:
+
+CREATE PROCEDURE SP_FindBookByTitle
+	@Title NVARCHAR(100)
+AS 
+BEGIN
+
+	SELECT * 
+	FROM Books 
+	WHERE Books.Title = @Title;
+
+END 
+
+
+----> SP Find Book By ID:
+
+
+CREATE PROCEDURE  SP_FindBookByBookID
+	@BookID INT 
+AS 
+BEGIN 
+
+	SELECT * 
+	FROM Books 
+	WHERE Books.BookID = @BookID;
+
+END 
+
+
+
+
+----> SP ADD New Book:
+
+CREATE PROCEDURE SP_AddNewBook
+	@AuthorID INT ,
+	@Title NVARCHAR(50) , 
+	@Genre NVARCHAR(50) , 
+	@ISBN NVARCHAR(50) , 
+	@PublishedDate DATE , 
+	@AdditionalNotes NVARCHAR(50) 
+AS
+BEGIN
+		
+		INSERT INTO Books(AuthorID,Title,Genre,ISBN,PublishedDate,AdditionalNotes)
+		VALUES (@AuthorID,@Title,@Genre,@ISBN,@PublishedDate,@AdditionalNotes);
+		SELECT SCOPE_IDENTITY();
+END 
+
+----> SP Does Book Exist:
+
+CREATE PROCEDURE SP_DoesBookExistByTitle
+	@Title NVARCHAR(50)
+AS
+BEGIN 
+
+	SELECT IsFound = 1 
+	FROM Books 
+	WHERE Books.Title = @Title;
+
+END
+
+-----> SP Get Books Title:
+
+CREATE PROCEDURE SP_GetBooksTitle
+AS
+BEGIN
+	
+	SELECT DISTINCT Books.Title
+	FROM Books;
+
+END 
+

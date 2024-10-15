@@ -1,0 +1,121 @@
+
+
+
+----> Create Users_View 
+
+CREATE VIEW Users_View 
+AS 
+SELECT Users.UserID , People.FirstName + ' ' + People.SecondName + ' ' + People.ThirdName + ' ' + People.LastName AS FullName , People.PhoneNumber , People.Email , 
+
+CASE 
+	WHEN People.Gender = 0 THEN 'Female' 
+	ELSE 'Male'
+END AS Gender
+
+FROM Users INNER JOIN People ON Users.PersonID = People.PersonID;
+
+
+
+
+----> SP Get All Users
+
+
+CREATE VIEW Users_View 
+AS 
+SELECT People.FirstName + ' ' + People.SecondName + ' ' + People.ThirdName + ' ' + People.LastName AS FullName , People.PhoneNumber , People.Email , People.Gender
+FROM Users INNER JOIN People ON Users.PersonID = People.PersonID;
+
+
+-----> SP Find User By Phone Number 
+
+
+
+CREATE PROCEDURE SP_FindUserByPhoneNumber
+	@PhoneNumber NVARCHAR(50)
+AS
+BEGIN
+
+		SELECT Users.UserID , Users.PersonID
+		FROM Users INNER JOIN People ON Users.PersonID = People.PersonID
+		WHERE People.PhoneNumber = @PhoneNumber;
+	
+
+END
+
+
+---> SP Delete User By UserID 
+
+CREATE PROCEDURE SP_DeleteUserByID
+	@UserID INT 
+AS	
+BEGIN
+
+	DELETE 
+	FROM Users 
+	WHERE Users.UserID = @UserID;
+
+END 
+
+
+----> After deletion trigger to delete person associated with this client.
+
+CREATE TRIGGER trg_DeletePersonAfterUser
+ON Users
+AFTER DELETE 
+AS
+BEGIN
+
+	Delete 
+	FROM People
+	WHERE People.PersonID = (SELECT deleted.PersonID FROM deleted);
+
+END 
+
+
+-----> SP Find User By UserID 
+
+CREATE PROCEDURE SP_FindUserByID
+	@UserID INT 
+AS
+BEGIN 
+
+	SELECT * 
+	FROM Users 
+	WHERE Users.UserID = @UserID;
+
+END 
+
+-----> SP Add New User 
+
+CREATE PROCEDURE SP_AddNewUser
+	@PersonID INT 
+AS
+BEGIN 
+
+	INSERT INTO Users(PersonID)
+	VALUES(@PersonID);
+	SELECT SCOPE_IDENTITY();
+
+END 
+
+
+--> FN Find User ID BY Phone Number 
+
+CREATE FUNCTION FN_FindUserIDByPhoneNumber(@PhoneNumber NVARCHAR(100))
+RETURNS  INT
+AS
+BEGIN
+    
+    DECLARE @UserID INT = 0;
+
+	 	
+		SELECT @UserID = Users.UserID
+		FROM Users INNER JOIN People ON Users.PersonID = People.PersonID
+		WHERE People.PhoneNumber = @PhoneNumber;
+
+
+
+    RETURN @UserID;
+END;
+
+

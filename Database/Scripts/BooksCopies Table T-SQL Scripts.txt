@@ -1,0 +1,138 @@
+
+
+---> Available Books View
+
+
+ALTER VIEW AvailableBooks_View 
+AS
+SELECT ROW_NUMBER() OVER(ORDER BY Books.Title) AS Number , BooksCopies.BookCopyID ,  Books.Title , Books.Genre , Books.ISBN , Books.PublishedDate , dbo.GetFullNameByPersonID(People.PersonID) AS Author , 
+
+CASE 
+	WHEN BooksCopies.IsAvailable = 1 THEN 'Available' 
+	ELSE 'Not Available'
+
+ END AS Status 
+
+FROM Books INNER JOIN BooksCopies ON BooksCopies.BookID = Books.BookID INNER JOIN Authors ON Books.AuthorID = Authors.AuthorID INNER JOIN People ON People.PersonID = Authors.PersonID
+WHERE BooksCopies.IsAvailable = 1;
+
+
+
+
+---> SP Get All BooksCopies
+
+CREATE PROCEDURE SP_GetAvailableBooks
+AS
+BEGIN
+
+	SELECT * 
+	FROM AvailableBooks_View
+	ORDER BY AvailableBooks_View.Title ASC;
+
+END
+
+
+---> SP Does Book Copy Exist By Title
+
+
+CREATE PROCEDURE SP_DoesBookCopyExistByTitle
+	@Title NVARCHAR(50)
+AS
+BEGIN
+
+	SELECT TOP 1 IsFound = 1
+	FROM AvailableBooks_View 
+	WHERE AvailableBooks_View.Title = @Title AND AvailableBooks_View.Status = 'Available';
+
+END
+
+
+---> SP Insert Multiple Copies Of A Book:
+
+
+
+CREATE PROCEDURE SP_AddBookCopies
+	@BookID INT ,
+	@NumberOfAddedCopies INT
+AS
+BEGIN 
+
+	DECLARE @Counter INT;
+	SET @Counter = @NumberOfAddedCopies;
+
+	WHILE @Counter != 0
+		BEGIN
+
+			INSERT INTO BooksCopies(BookID,IsAvailable) 
+			VALUES(@BookID,1);
+
+			SET @Counter = @Counter - 1;
+
+		END 
+
+END
+
+
+---> SP Delete Book Copy By ID:
+
+CREATE PROCEDURE SP_DeleteBookCopyByID 
+	@BookCopyID INT 
+AS 
+BEGIN 
+
+	DELETE BooksCopies 
+	WHERE BooksCopies.BookCopyID = @BookCopyID;
+
+END 
+
+
+---> SP Find Book Copy By ID 
+
+
+CREATE PROCEDURE SP_FindBookCopyByBookCopyID
+	@BookCopyID INT 
+AS 
+BEGIN 
+
+	SELECT * 
+	FROM BooksCopies
+	WHERE BooksCopies.BookCopyID = @BookCopyID;
+
+END 
+
+
+--> FN Find Book Copy ID By Title: 
+
+
+CREATE FUNCTION FN_FindBookCopyIDByTitle(@Title NVARCHAR(100) )
+RETURNS  INT
+AS
+BEGIN
+    
+    DECLARE @BookCopyID INT = 0;
+
+	 	SELECT TOP 1 @BookCopyID = BooksCopies.BookCopyID
+			   FROM Books INNER JOIN BooksCopies ON Books.BookID = BooksCopies.BookID
+			   WHERE Books.Title = @Title AND BooksCopies.IsAvailable = 1;
+
+    RETURN @BookCopyID;
+END;
+
+
+
+----> SP: Find Available BookCopyID By BookTitle
+
+
+CREATE PROCEDURE SP_FindAvailableBookCopyIDByBookTitle
+	@BookTitle NVARCHAR(100)
+AS
+BEGIN
+
+	SELECT TOP 1 BooksCopies.BookCopyID
+	FROM BooksCopies INNER JOIN Books ON BooksCopies.BookID = Books.BookID
+	WHERE BooksCopies.IsAvailable = 1 AND Books.Title = @BookTitle;
+
+END 
+
+
+

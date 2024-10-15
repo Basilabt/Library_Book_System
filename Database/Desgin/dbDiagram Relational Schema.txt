@@ -1,0 +1,96 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table People {
+  PersonID    integer
+  FirstName   nvarchar
+  SecondName  nvarchar
+  ThirdName   nvarchar
+  LastName    nvarchar
+  Gender      nvarchar
+  PhoneNumber nvarchar
+  Email       nvarchar
+}
+
+
+Table Users {
+  UserID integer 
+  PersonID integer
+  CardID integer
+}
+
+
+
+Table Authors {
+  AuthorID integer [primary key]
+  PersonID integer
+}
+
+
+Table Books {
+  BookID integer [primary key]
+  AuthorID integer 
+  Title nvarchar
+  Genre nvarchar
+  ISBN nvarchar
+  PublishedDate date
+  AdditionalNotes nvarchar
+}
+
+
+Table BooksCopies {
+  BookCopyID integer [primary key]
+  BookID integer
+  IsAvailable bit
+}
+
+Table Cards {
+  CardID integer [primary key]
+  UserID integer
+  CardNumber nvarchar
+}
+
+Table Reservations {
+  ReservationID integer [primary key]
+  BookCopyID integer
+  UserID integer 
+  ReservationDate date 
+}
+
+
+Table Fines {
+  FineID integer [primary key]
+  BorrowingID integer
+  UserID integer
+  TotalFines integer
+  NumberOfLateDays integer
+  IsPaid bit
+}
+
+Table Borrowings {
+  BorrowingID integer [primary key]
+  BookCopyID integer
+  UserID integer 
+  StartDate date 
+  EndDate date
+  ActualReturnDate date
+}
+
+Table Settings {
+  DefaultBorrowDays integer
+  DefaultFinePerDay float
+}
+
+
+
+Ref: Users.PersonID - People.PersonID
+Ref: Authors.PersonID - People.PersonID
+Ref: Users.CardID - Cards.CardID
+Ref: Books.AuthorID > Authors.AuthorID
+Ref: BooksCopies.BookID > Books.BookID
+Ref: Borrowings.BookCopyID > BooksCopies.BookCopyID
+Ref: Reservations.BookCopyID > BooksCopies.BookCopyID
+Ref: Fines.BorrowingID - Borrowings.BorrowingID 
+Ref: Fines.UserID > Users.UserID
+
+

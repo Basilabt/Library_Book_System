@@ -1,0 +1,108 @@
+
+---> Create View For Reservations Table:
+
+CREATE VIEW Reservations_View
+AS
+	SELECT ROW_NUMBER() OVER(ORDER BY Reservations.ReservationDate) AS # , Reservations.ReservationID , Books.Title , People.FirstName + ' ' + People.SecondName + ' ' + People.ThirdName + ' ' + People.LastName AS Fullname , Reservations.ReservationDate
+	FROM Reservations INNER JOIN BooksCopies ON Reservations.BookCopyID = BooksCopies.BookCopyID 
+					  INNER JOIN Books ON BooksCopies.BookID = Books.BookID 
+					  INNER JOIN Users ON Reservations.UserID = Users.UserID
+					  INNER JOIN People ON People.PersonID = Users.PersonID;
+
+
+
+
+
+---> SP Get All Reservations:
+
+CREATE PROCEDURE SP_GetAllReservations
+AS
+BEGIN
+
+	SELECT * 
+	FROM Reservations_View;
+
+END
+
+
+
+
+---> SP Add New Reservation:
+
+
+CREATE PROCEDURE SP_AddNewReservation
+	@BookTitle	 NVARCHAR(100) ,
+	@PhoneNumber NVARCHAR(100) ,
+	@ReservationDate DATE 
+AS
+BEGIN 
+
+	INSERT INTO Reservations(BookCopyID,UserID,ReservationDate)
+	VALUES(dbo.FN_FindBookCopyIDByTitle(@BookTitle),dbo.FN_FindUserIDByPhoneNumber(@PhoneNumber),@ReservationDate);
+
+	SELECT SCOPE_IDENTITY();
+
+END 
+
+
+
+----> SP Delete Reservation:
+
+
+CREATE PROCEDURE SP_DeleteReservation
+	@ReservationID INT 
+AS
+BEGIN
+
+	DELETE Reservations
+	WHERE Reservations.ReservationID = @ReservationID;
+
+END
+
+
+----> SP Does Reservation Exist By Fullname:
+
+
+CREATE PROCEDURE SP_DoesReservationExistByFullname
+	@Fullname NVARCHAR(200)
+AS
+BEGIN
+	
+	SELECT IsFound = 1 
+	FROM Reservations_View
+	WHERE Reservations_View.Fullname = @Fullname;
+
+END
+
+
+----> SP Find Reservation By ID:
+
+CREATE PROCEDURE SP_FindReservationByReservationID
+	@ReservationID INT 
+AS
+BEGIN
+
+
+	SELECT * 
+	FROM  Reservations  
+	WHERE Reservations.ReservationID = @ReservationID;
+
+END 
+
+
+----> Trigger after reservation insertion:
+
+CREATE TRIGGER Trigger_AfterNewReservationInserted
+ON Reservations
+AFTER INSERT
+AS
+BEGIN 
+	
+	UPDATE BooksCopies
+	SET BooksCopies.IsAvailable = 0
+	FROM BooksCopies INNER JOIN inserted ON BooksCopies.BookCopyID = inserted.BookCopyID
+
+	
+END;
+
+

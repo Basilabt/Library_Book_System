@@ -1,0 +1,96 @@
+
+
+----> Create View 
+
+CREATE VIEW Cards_View
+AS
+     SELECT Cards.CardID , Cards.CardNumber , dbo.GetFullNameByPersonID(People.PersonID) AS FullName 
+     FROM Cards INNER JOIN Users ON Cards.UserID = Users.UserID INNER JOIN People ON Users.PersonID = People.PersonID;
+
+
+
+-----> SP Get All Cards
+
+CREATE PROCEDURE SP_GetAllCards
+AS
+BEGIN
+	
+	SELECT * 
+	FROM Cards_View;
+	
+END 
+
+
+-----> SP Does Card Exist By Fullname
+
+
+CREATE PROCEDURE SP_DoesCardExistByFullname
+	@FullName NVARCHAR(200) 
+AS 
+BEGIN
+
+	SELECT IsFound = 1 
+	FROM Cards_View 
+	WHERE Cards_View.FullName = @FullName;
+
+END 
+
+
+------> SP Delete Card By Card Number 
+
+CREATE PROCEDURE SP_DeleteCardByCardNumber
+	@CardNumber NVARCHAR(100)
+AS 
+BEGIN
+	
+	DELETE 
+	FROM Cards
+	WHERE Cards.CardNumber = @CardNumber;
+
+END
+
+
+------> SP Find Card By Card Number 
+
+
+CREATE PROCEDURE SP_FindCardByCardNumber
+	@CardNumber NVARCHAR(100)
+AS
+BEGIN 
+
+	SELECT * 
+	FROM Cards 
+	WHERE Cards.CardNumber = @CardNumber;
+
+END 
+
+
+------> SP Is Unique Card Number 
+
+
+CREATE PROCEDURE SP_IsUniqueCardNumber
+	@CardNumber NVARCHAR(50)
+AS
+BEGIN 
+
+	SELECT IsFound = 1 
+	FROM Cards 
+	WHERE Cards.CardNumber = @CardNumber;
+	
+
+END 
+
+
+------> SP Add New Card 
+
+CREATE PROCEDURE SP_AddNewCard
+	@UserID INT , 
+	@CardNumber NVARCHAR(50) 
+AS
+BEGIN
+
+	INSERT INTO Cards(UserID,CardNumber) 
+	VALUES(@UserID,@CardNumber);
+	SELECT SCOPE_IDENTITY();
+
+END 

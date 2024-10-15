@@ -1,0 +1,102 @@
+
+
+
+-----> Create Borowings View:
+
+CREATE VIEW Borrowings_View
+AS
+SELECT Borrowings.BorrowingID , Books.Title , People.FirstName + ' ' + People.SecondName + ' ' + People.ThirdName + ' ' + People.LastName AS Fullname , Borrowings.StartDate , Borrowings.EndDate
+FROM Borrowings INNER JOIN BooksCopies ON Borrowings.BookCopyID = BooksCopies.BookCopyID INNER JOIN Books ON BooksCopies.BookID = Books.BookID INNER JOIN Users ON Borrowings.UserID = Users.UserID INNER JOIN People ON Users.PersonID = People.PersonID;
+
+
+-----> SP Add New Borrowing:
+
+CREATE PROCEDURE SP_AddNewBorrowing
+	@BookCopyID   INT   , 
+	@UserID		  INT   ,
+	@StartDate    DATE  , 
+	@EndDate      DATE  , 
+	@ActualReturnDate DATE 
+AS
+BEGIN 
+
+	INSERT INTO Borrowings(BookCopyID,UserID,StartDate,EndDate,ActualReturnDare)
+	VALUES(@BookCopyID,@UserID,@StartDate,@EndDate,@ActualReturnDate);
+	
+	SELECT SCOPE_IDENTITY();
+
+END 
+
+
+
+----> SP Delete Borrowing:
+
+CREATE PROCEDURE SP_DeleteBorrowingByBorrowingID 
+	@BorrowingID INT 
+AS
+BEGIN
+
+	DELETE FROM Borrowings
+	WHERE Borrowings.BorrowingID = @BorrowingID;
+
+END
+
+
+-----> SP Get All Borrowings: 
+
+
+CREATE PROCEDURE SP_GetAllBorrowings
+AS
+BEGIN
+
+	SELECT * 
+	FROM Borrowings_View;
+
+END 
+
+
+----> SP Find Borrowing By Book Title:
+
+
+CREATE PROCEDURE SP_FindBorrowingByBookTitle
+	@BookTitle NVARCHAR(100) , 
+	@Fullname  NVARCHAR(100)
+AS
+BEGIN 
+
+	SELECT TOP 1 *
+	FROM Borrowings_View
+	WHERE Borrowings_View.Title = @BookTitle AND Borrowings_View.Fullname = @Fullname;
+	
+END 
+
+
+----> SP Find Borrowing By ID:
+
+
+CREATE PROCEDURE SP_FindBorrowingByBorrowingID
+	@BorrowingID INT 
+AS
+BEGIN
+
+	SELECT * 
+	FROM Borrowings
+	WHERE Borrowings.BorrowingID = @BorrowingID;
+
+END 
+
+
+-----> SP Return Borrowing By ID:
+
+CREATE PROCEDURE SP_ReturnBorrowing
+	@BorrowingID INT 
+AS
+BEGIN
+	
+	UPDATE Borrowings
+	SET Borrowings.ActualReturnDare = CAST(GETDATE() AS DATE)
+	WHERE Borrowings.BorrowingID = @BorrowingID;
+		
+	EXEC SP_AddFineRecord @BorrID = @BorrowingID;
+
+END 

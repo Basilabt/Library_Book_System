@@ -1,0 +1,54 @@
+
+----> SP Login By Username And Password.
+
+CREATE PROCEDURE SP_LoginByUsernameAndPassword
+	@Username NVARCHAR(50) ,
+	@Password NVARCHAR(50) 
+AS
+BEGIN
+
+	SELECT IsFound = 1 
+	FROM LibraryManagers 
+	WHERE LibraryManagers.Username = @Username  AND LibraryManagers.Password = @Password
+
+END
+
+
+
+----> SP Is Manager Account Active
+
+
+CREATE PROCEDURE SP_IsManagerAccountActive
+	@Username NVARCHAR(50) 
+AS 
+BEGIN
+
+	SELECT IsActive = 1 
+	FROM LibraryManagers
+	WHERE LibraryManagers.Username = @Username AND LibraryManagers.IsActive = 1;
+
+END 
+
+
+
+
+-----> SP Find Manager By Username 
+
+
+CREATE PROCEDURE SP_FindLibraryManagerByUsername
+	@Username NVARCHAR(50)
+
+AS
+BEGIN
+
+	SELECT *
+	FROM LibraryManagers 
+	WHERE LibraryManagers.Username = @Username;
+
+END 
+
+
+
+
+
+
