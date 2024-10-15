@@ -11,4 +11,6 @@ A fullstack desktop application.
 ## Database Relational Schema
 ![Relational_Schema](https://github.com/user-attachments/assets/78065737-e13b-4716-a799-5b247d1caac2)
 
+## Description
+
 
